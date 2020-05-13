@@ -1,0 +1,83 @@
+{
+  "name": "air-quality-dashboard-electron",
+  "version": "0.1.6",
+  "author": "Debuglines",
+  "homepage": "./",
+  "main": "public/electron.js",
+  "repository": "https://github.com/air-quality-tools/air-quality-dashboard-electron.git",
+  "private": true,
+  "scripts": {
+    "start": "nf start -p 3000",
+    "build": "rescripts build",
+    "test": "rescripts test --env=jsdom",
+    "eject": "rescripts eject",
+    "electron": "electron .",
+    "electron-start": "node src/start-react",
+    "react-start": "rescripts start",
+    "pack": "build --dir",
+    "dist": "yarn run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps",
+    "preelectron-pack": "yarn build",
+    "electron-pack": "electron-builder build -w"
+  },
+  "dependencies": {
+    "date-fns": "2.13.0",
+    "effector": "20.14.0",
+    "effector-react": "20.7.1",
+    "emotion": "10.0.27",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-scripts": "3.4.1"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "7.9.4",
+    "@babel/preset-typescript": "7.9.0",
+    "@emotion/babel-preset-css-prop": "10.0.27",
+    "@rescripts/cli": "0.0.14",
+    "@rescripts/rescript-env": "0.0.12",
+    "@rescripts/rescript-use-babel-config": "0.0.10",
+    "@testing-library/jest-dom": "4.2.4",
+    "@testing-library/react": "9.3.2",
+    "@testing-library/user-event": "7.1.2",
+    "@types/date-fns": "2.6.0",
+    "@types/jest": "25.2.1",
+    "@types/node": "13.13.5",
+    "@types/react": "16.9.34",
+    "@types/react-dom": "16.9.0",
+    "electron": "8.2.5",
+    "electron-builder": "22.6.0",
+    "expect": "26.0.1",
+    "typescript": "~3.7.2"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "build": {
+    "appId": "com.debuglines.air-quality.dashboard",
+    "icon": "./public/logo512.png",
+    "directories": {
+      "buildResources": "public",
+      "output": "release"
+    },
+    "files": [
+      "./build/**/*",
+      "*.js",
+      "*.ts",
+      "*.tsx",
+      "build",
+      "node_modules"
+    ]
+  }
+}
