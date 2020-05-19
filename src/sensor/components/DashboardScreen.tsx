@@ -1,18 +1,19 @@
 import React, { useEffect } from 'react'
-import { LatestSensorData, loadLatestSensorData } from '../store'
+import AirQualityStore, { loadLatestSensorData } from '../../app/store'
 import { useStore } from 'effector-react'
 import SensorDataOverviewWidget from './SensorDataOverviewWidget'
 
 type Props = {}
 
 const DashboardScreen: React.FC<Props> = (props) => {
-  const latestSensorDataResult = useStore(LatestSensorData)
+  const store = useStore(AirQualityStore)
+  const latestSensorDataResult = store.latestSensorData
 
   useEffect(() => {
     loadLatestSensorData(undefined)
   }, [])
 
-  if (latestSensorDataResult === null) {
+  if (latestSensorDataResult === undefined) {
     return (
       <div>
         <p>Loading sensor data from disk</p>

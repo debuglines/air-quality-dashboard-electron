@@ -1,12 +1,15 @@
-import { SensorData } from './domain/sensorData'
 import { parseISO } from 'date-fns'
 import { promises as fs } from 'fs'
-import { join } from 'path'
 import { homedir } from 'os'
+import { join } from 'path'
+import { SensorData } from './domain/sensorData'
 
 export const BASE_DIR_NAME = '.air-quality'
-export const BASE_DIR_PATH = join(homedir(), BASE_DIR_NAME)
-export const BASE_DATA_DIR_PATH = join(BASE_DIR_PATH, 'data')
+export const LOCAL_BASE_DIR_PATH_FULL = join(homedir(), BASE_DIR_NAME)
+export const LOCAL_BASE_DATA_DIR_PATH_FULL = join(
+  LOCAL_BASE_DIR_PATH_FULL,
+  'data',
+)
 
 export async function parseLatestSensorDataFromDir(
   dirPath: string,

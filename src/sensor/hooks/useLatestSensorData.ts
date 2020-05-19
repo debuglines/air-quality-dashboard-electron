@@ -1,11 +1,9 @@
+import { useEffect, useState } from 'react'
 import { SensorData } from '../domain/sensorData'
 import {
-  parseLatestSensorDataFromFile,
-  BASE_DIR_PATH,
-  BASE_DATA_DIR_PATH,
+  LOCAL_BASE_DATA_DIR_PATH_FULL,
   parseLatestSensorDataFromDir,
 } from '../parser'
-import { useState, useEffect } from 'react'
 
 function useLatestSensorData(): SensorData | undefined {
   const [sensorData, setSensorData] = useState<SensorData | undefined>(
@@ -14,7 +12,9 @@ function useLatestSensorData(): SensorData | undefined {
 
   useEffect(() => {
     const run = async () => {
-      const sensorData = await parseLatestSensorDataFromDir(BASE_DATA_DIR_PATH)
+      const sensorData = await parseLatestSensorDataFromDir(
+        LOCAL_BASE_DATA_DIR_PATH_FULL,
+      )
       setSensorData(sensorData)
     }
 
