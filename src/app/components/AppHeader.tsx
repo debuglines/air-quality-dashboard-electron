@@ -1,8 +1,8 @@
-import React from 'react'
-import { typedStyles } from '../theme/styleHelpers'
 import { css } from 'emotion'
-import { Link } from 'react-router-dom'
+import React from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { dashboardRoute, rootRoute, syncPath } from '../routesHelper'
+import { typedStyles } from '../theme/styleHelpers'
 
 type Props = {}
 
@@ -29,11 +29,17 @@ type MenuItemProps = {
 }
 
 const MenuItem: React.FC<MenuItemProps> = (props) => {
+  const useExact = props.path === rootRoute()
   return (
     <li className={css(styles.menuItemWrapper)}>
-      <Link className={css(styles.menuItem)} to={props.path}>
+      <NavLink
+        className={css(styles.menuItem)}
+        to={props.path}
+        activeClassName={css(styles.menuItemActive)}
+        exact={useExact}
+      >
         {props.label}
-      </Link>
+      </NavLink>
     </li>
   )
 }
@@ -69,6 +75,9 @@ const styles = typedStyles({
     paddingLeft: '20px',
     paddingRight: '20px',
     verticalAlign: 'middle',
+  },
+  menuItemActive: {
+    boxShadow: 'inset 0px -2px 0px 0px #000',
   },
 })
 

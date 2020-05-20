@@ -10,6 +10,7 @@ type Props = {}
 
 const RemoteConnectWidget: React.FC<Props> = (props) => {
   const { remoteConnection } = useStore(AirQualityStore)
+
   const [host, setHost] = useState<undefined | string>('raspberrypi')
   const [username, setUsername] = useState<undefined | string>('pi')
   const [password, setPassword] = useState<string>('')

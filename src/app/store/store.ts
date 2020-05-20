@@ -39,13 +39,13 @@ export const connectRemote = AirQualityDomain.createEffect<
 
 type StoreType = {
   latestSensorData: Result<SensorData> | undefined
-  allSensorData: Result<SensorData[]> | undefined
+  allSensorDataResult: Result<SensorData[]> | undefined
   remoteConnection: NodeSSH | undefined
 }
 
 const initialState: StoreType = {
   latestSensorData: undefined,
-  allSensorData: undefined,
+  allSensorDataResult: undefined,
   remoteConnection: undefined,
 }
 
@@ -58,7 +58,7 @@ const AirQualityStore = AirQualityDomain.store<StoreType>(initialState)
     return { ...state, latestSensorData: resultOk(sensorData) }
   })
   .on(loadAllSensorData.doneData, (state, sensorDataResult) => {
-    return { ...state, allSensorData: sensorDataResult }
+    return { ...state, allSensorDataResult: sensorDataResult }
   })
   .on(connectRemote.doneData, (state, connection) => {
     return { ...state, remoteConnection: connection }

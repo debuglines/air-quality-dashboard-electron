@@ -6,3 +6,8 @@ export enum GraphType {
   Temperature = 'temperature',
   Pressure = 'pressure',
 }
+
+export type LineChartPoint = {
+  date: string
+  value: number
+}

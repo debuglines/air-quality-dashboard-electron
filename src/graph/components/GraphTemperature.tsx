@@ -14,10 +14,10 @@ type Props = {
   vocData: LineChartPoint[]
 }
 
-const GraphVoc: React.FC<Props> = (props) => {
+const GraphTemperature: React.FC<Props> = (props) => {
   return (
     <div>
-      <h2>Volatile compounds</h2>
+      <h2>Temperature</h2>
       <ResponsiveContainer width="95%" height={500}>
         <LineChart data={props.vocData}>
           <YAxis dataKey="value" />
@@ -35,4 +35,4 @@ const GraphVoc: React.FC<Props> = (props) => {
   )
 }
 
-export default GraphVoc
+export default GraphTemperature
