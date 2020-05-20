@@ -1,19 +1,21 @@
+import { differenceInMinutes } from 'date-fns'
+import { css } from 'emotion'
 import React from 'react'
+import { dateFromTimezone, dateWithTimezone } from '../../app/helpers'
+import { typedStyles } from '../../app/theme/styleHelpers'
+import { GraphType } from '../../graph/types'
 import {
-  SensorData,
-  overallQuality,
-  radonShortTermQuality,
-  vocQuality,
-  temperatureQuality,
-  humidityQuality,
   co2Quality,
+  humidityQuality,
+  overallQuality,
   pressureQuality,
+  radonShortTermQuality,
+  SensorData,
   SensorQuality,
+  temperatureQuality,
+  vocQuality,
 } from '../domain/sensorData'
 import SingleSensorDataItem from './SingleSensorDataItem'
-import { typedStyles } from '../../app/theme/styleHelpers'
-import { css } from 'emotion'
-import useRefreshIncrement from '../../app/hooks/useRefreshIncrement'
 
 type Props = {
   sensorData: SensorData
@@ -21,7 +23,11 @@ type Props = {
 
 const SensorDataOverviewWidget: React.FC<Props> = (props) => {
   const { sensorData } = props
-  useRefreshIncrement(1000 * 30 * 5)
+
+  const differenceMinutes = differenceInMinutes(
+    dateFromTimezone(new Date()),
+    sensorData.datetimeUtc,
+  )
 
   return (
     <section>
@@ -29,7 +35,11 @@ const SensorDataOverviewWidget: React.FC<Props> = (props) => {
         <p>
           Overall air quality [{getQualityText(overallQuality(sensorData))}]
         </p>
-        <p>Latest data from: {sensorData.datetimeUtc.toISOString()}</p>
+        <p>
+          Latest data from:{' '}
+          {dateWithTimezone(sensorData.datetimeUtc).toString()}
+        </p>
+        <p>Relative time: {differenceMinutes} minutes ago</p>
       </header>
 
       <dl className={css(styles.wrapper)}>
@@ -42,36 +52,42 @@ const SensorDataOverviewWidget: React.FC<Props> = (props) => {
             </>
           }
           quality={radonShortTermQuality(sensorData)}
+          graphType={GraphType.Radon}
         />
         <SingleSensorDataItem
           label="TVOC"
           value={sensorData.voc}
           valueUnit="ppb"
           quality={vocQuality(sensorData)}
+          graphType={GraphType.Radon}
         />
         <SingleSensorDataItem
           label="CO2"
           value={sensorData.co2}
           valueUnit="ppm"
           quality={co2Quality(sensorData)}
+          graphType={GraphType.Co2}
         />
         <SingleSensorDataItem
           label="Humidity"
           value={sensorData.humidity}
           valueUnit="%"
           quality={humidityQuality(sensorData)}
+          graphType={GraphType.Humidity}
         />
         <SingleSensorDataItem
           label="Temperature"
           value={sensorData.temperatureInCelcius}
           valueUnit="°C"
           quality={temperatureQuality(sensorData)}
+          graphType={GraphType.Temperature}
         />
         <SingleSensorDataItem
           label="Pressure"
           value={sensorData.pressure}
           valueUnit="mbar"
           quality={pressureQuality(sensorData)}
+          graphType={GraphType.Pressure}
         />
       </dl>
     </section>

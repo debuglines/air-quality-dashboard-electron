@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
-import AirQualityStore, { loadLatestSensorData } from '../../app/store'
 import { useStore } from 'effector-react'
+import React, { useEffect } from 'react'
+import AirQualityStore, { loadLatestSensorData } from '../../app/store/store'
 import SensorDataOverviewWidget from './SensorDataOverviewWidget'
 
 type Props = {}

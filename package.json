@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "date-fns": "2.13.0",
+    "date-fns-tz": "1.0.10",
     "effector": "20.14.0",
     "effector-react": "20.7.1",
     "emotion": "10.0.27",
@@ -29,7 +30,8 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-router-dom": "5.2.0",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "recharts": "1.8.5"
   },
   "devDependencies": {
     "@babel/preset-react": "7.9.4",
@@ -47,6 +49,7 @@
     "@types/react": "16.9.34",
     "@types/react-dom": "16.9.0",
     "@types/react-router-dom": "5.1.5",
+    "@types/recharts": "1.8.10",
     "@types/ssh2": "0.5.43",
     "electron": "8.2.5",
     "electron-builder": "22.6.0",

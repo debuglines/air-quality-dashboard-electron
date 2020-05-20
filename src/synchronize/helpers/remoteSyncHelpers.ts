@@ -1,4 +1,5 @@
 import NodeSSH from 'node-ssh'
+import { generateChecksum, SyncFileMetadata } from './syncHelpers'
 
 const ssh = new NodeSSH()
 
@@ -33,19 +34,41 @@ export type FileEntry = {
 
 export async function remoteDataFileMetadata(
   connection: NodeSSH,
-): Promise<FileEntry[]> {
+): Promise<SyncFileMetadata[]> {
   const sftp = await connection.requestSFTP()
   const remotePath = './.air-quality/data'
 
-  return new Promise((resolve, reject) => {
-    sftp.readdir(remotePath, (err, data) => {
+  return new Promise<SyncFileMetadata[]>((resolve, reject) => {
+    sftp.readdir(remotePath, (err, dataList) => {
       if (err) {
         return reject(err)
       }
+      const metadataList: Promise<SyncFileMetadata>[] = dataList.map((data) =>
+        remoteFileMetadataMapper(connection, data, remotePath),
+      )
 
-      return resolve(data)
+      return resolve(Promise.all(metadataList))
     })
   })
+}
+
+async function remoteFileMetadataMapper(
+  connection: NodeSSH,
+  fileEntry: FileEntry,
+  remoteDirPath: string,
+): Promise<SyncFileMetadata> {
+  const fileData: string = (
+    await getRemoteFileData(connection, [fileEntry.filename])
+  )[0].data
+
+  const checksum = generateChecksum(fileData)
+
+  return {
+    filename: fileEntry.filename,
+    checksum,
+    fullPath: `${remoteDirPath}/${fileEntry.filename}`,
+    modifiedDate: new Date(fileEntry.attrs.mtime),
+  }
 }
 
 export type RemoteFileData = {

@@ -1,13 +1,17 @@
-import React from 'react'
-import { SensorQuality } from '../domain/sensorData'
 import { css } from 'emotion'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { graphPath } from '../../app/routesHelper'
 import { typedStyles } from '../../app/theme/styleHelpers'
+import { GraphType } from '../../graph/types'
+import { SensorQuality } from '../domain/sensorData'
 
 type Props = {
   label: string
   value: number
   valueUnit: string | JSX.Element
   quality: SensorQuality
+  graphType: GraphType
 }
 
 const SingleSensorDataItem: React.FC<Props> = (props) => {
@@ -16,7 +20,10 @@ const SingleSensorDataItem: React.FC<Props> = (props) => {
   const qualityText = getQualityText(props.quality)
 
   return (
-    <div className={css(styles.textLine, styles.wrapper, wrapperQualityStyle)}>
+    <Link
+      to={graphPath(props.graphType)}
+      className={css(styles.textLine, styles.wrapper, wrapperQualityStyle)}
+    >
       <dt className={css(styles.textLine, styles.heading)}>{props.label}</dt>
       <dd>
         <p className={css(styles.textLine)}>
@@ -27,7 +34,7 @@ const SingleSensorDataItem: React.FC<Props> = (props) => {
           <p className={css(styles.textLine, styles.quality)}>{qualityText}</p>
         )}
       </dd>
-    </div>
+    </Link>
   )
 }
 
@@ -63,6 +70,9 @@ const styles = typedStyles({
     paddingTop: '10px',
     paddingBottom: '20px',
     textAlign: 'center',
+    display: 'block',
+    textDecoration: 'none',
+    color: '#000',
   },
   wrapperTerrible: {
     backgroundColor: '#fad1d0',

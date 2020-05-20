@@ -1,11 +1,12 @@
 import React from 'react'
+import { HashRouter, Route, Switch } from 'react-router-dom'
+import GraphScreen from '../../graph/components/GraphScreen'
 import DashboardScreen from '../../sensor/components/DashboardScreen'
-import '../theme/reset.css'
-import '../theme/global.css'
-import { HashRouter, Switch, Route } from 'react-router-dom'
-import AppHeader from './AppHeader'
-import { dashboardRoute, syncPath } from '../routesHelper'
 import SynchronizeScreen from '../../synchronize/components/SynchronizeScreen'
+import { dashboardRoute, graphPathIndex, syncPath } from '../routesHelper'
+import '../theme/a-reset.css'
+import '../theme/global.css'
+import AppHeader from './AppHeader'
 
 type Props = {}
 
@@ -16,6 +17,9 @@ const App: React.FC<Props> = (props) => {
         <AppHeader />
 
         <Switch>
+          <Route path={graphPathIndex()}>
+            <GraphScreen />
+          </Route>
           <Route path={syncPath()}>
             <SynchronizeScreen />
           </Route>

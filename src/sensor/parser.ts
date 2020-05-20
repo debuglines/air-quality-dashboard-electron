@@ -1,7 +1,9 @@
-import { parseISO } from 'date-fns'
+import { parseJSON } from 'date-fns'
 import { promises as fs } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
+import { resultOk } from '../app/helpers'
+import { Result } from '../app/types'
 import { SensorData } from './domain/sensorData'
 
 export const BASE_DIR_NAME = '.air-quality'
@@ -10,6 +12,28 @@ export const LOCAL_BASE_DATA_DIR_PATH_FULL = join(
   LOCAL_BASE_DIR_PATH_FULL,
   'data',
 )
+
+export async function parseAllSensorDataFromDir(
+  dirPath: string,
+): Promise<Result<SensorData[]>> {
+  const filenames = await fs.readdir(dirPath)
+
+  if (filenames.length === 0) {
+    return resultOk([])
+  }
+
+  const dataPromises = filenames.map((filename) =>
+    parseLatestSensorDataFromFile(join(dirPath, filename)),
+  )
+  const datalist = await Promise.all(dataPromises)
+
+  // filter not able to detect not undefined
+  const filteredDataList = datalist.filter(
+    (data) => data !== undefined,
+  ) as SensorData[]
+
+  return resultOk(filteredDataList)
+}
 
 export async function parseLatestSensorDataFromDir(
   dirPath: string,
@@ -36,10 +60,10 @@ export function parseLatestSensorDataFromFileData(
   fileData: string,
 ): SensorData | undefined {
   const lines = fileData.split('\n')
+
   if (lines.length <= 1) {
     return undefined
   }
-
   let line = lines.pop()
   if (line?.trim() === '') {
     line = lines.pop()
@@ -65,7 +89,7 @@ export function parseSensorDataCsvLine(line: string): SensorData | undefined {
   ] = line.split(',').map((data) => data.trim())
 
   return {
-    datetimeUtc: parseISO(timestampRaw),
+    datetimeUtc: parseJSON(timestampRaw),
     temperatureInCelcius: parseFloat(temperatureRaw),
     humidity: parseFloat(humidityRaw),
     pressure: parseFloat(pressureRaw),

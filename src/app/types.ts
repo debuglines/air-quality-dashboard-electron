@@ -9,3 +9,5 @@ export type ResultError = {
 }
 
 export type Result<T> = ResultOk<T> | ResultError
+
+export const TIMEZONE_STRING = 'Europe/Oslo'
