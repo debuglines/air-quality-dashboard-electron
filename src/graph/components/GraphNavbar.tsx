@@ -1,7 +1,7 @@
 import { css } from 'emotion'
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { graphPath } from '../../app/routesHelper'
+import { chartPath } from '../../app/helpers/routesHelper'
 import { typedStyles } from '../../app/theme/styleHelpers'
 import { GraphType } from '../types'
 
@@ -14,7 +14,7 @@ const GraphNavbar: React.FC<Props> = (props) => {
         <NavLink
           className={css(styles.link)}
           activeClassName={css(styles.linkActive)}
-          to={graphPath(GraphType.Radon)}
+          to={chartPath(GraphType.Radon)}
         >
           Radon
         </NavLink>
@@ -23,7 +23,7 @@ const GraphNavbar: React.FC<Props> = (props) => {
         <NavLink
           className={css(styles.link)}
           activeClassName={css(styles.linkActive)}
-          to={graphPath(GraphType.Voc)}
+          to={chartPath(GraphType.Voc)}
         >
           VOC
         </NavLink>
@@ -32,7 +32,7 @@ const GraphNavbar: React.FC<Props> = (props) => {
         <NavLink
           className={css(styles.link)}
           activeClassName={css(styles.linkActive)}
-          to={graphPath(GraphType.Co2)}
+          to={chartPath(GraphType.Co2)}
         >
           CO2
         </NavLink>
@@ -41,7 +41,7 @@ const GraphNavbar: React.FC<Props> = (props) => {
         <NavLink
           className={css(styles.link)}
           activeClassName={css(styles.linkActive)}
-          to={graphPath(GraphType.Humidity)}
+          to={chartPath(GraphType.Humidity)}
         >
           Humidity
         </NavLink>
@@ -50,7 +50,7 @@ const GraphNavbar: React.FC<Props> = (props) => {
         <NavLink
           className={css(styles.link)}
           activeClassName={css(styles.linkActive)}
-          to={graphPath(GraphType.Temperature)}
+          to={chartPath(GraphType.Temperature)}
         >
           Temperature
         </NavLink>
@@ -59,7 +59,7 @@ const GraphNavbar: React.FC<Props> = (props) => {
         <NavLink
           className={css(styles.link)}
           activeClassName={css(styles.linkActive)}
-          to={graphPath(GraphType.Pressure)}
+          to={chartPath(GraphType.Pressure)}
         >
           Pressure
         </NavLink>

@@ -1,4 +1,4 @@
-import { GraphType } from '../graph/types'
+import { GraphType } from '../../graph/types'
 
 export function dashboardRoute(): string {
   return '/'
@@ -9,11 +9,11 @@ export function syncPath(): string {
 }
 
 export function graphPathIndex(): string {
-  return '/graph/:graphType'
+  return '/chart/:graphType'
 }
 
-export function graphPath(graphType: GraphType): string {
-  return `/graph/${graphType}`
+export function chartPath(graphType: GraphType): string {
+  return `/chart/${graphType}`
 }
 
 export const rootRoute = dashboardRoute

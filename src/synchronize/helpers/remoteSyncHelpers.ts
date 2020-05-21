@@ -38,18 +38,24 @@ export async function remoteDataFileMetadata(
   const sftp = await connection.requestSFTP()
   const remotePath = './.air-quality/data'
 
-  return new Promise<SyncFileMetadata[]>((resolve, reject) => {
-    sftp.readdir(remotePath, (err, dataList) => {
-      if (err) {
-        return reject(err)
-      }
-      const metadataList: Promise<SyncFileMetadata>[] = dataList.map((data) =>
-        remoteFileMetadataMapper(connection, data, remotePath),
-      )
+  const awaitedData = await new Promise<SyncFileMetadata[]>(
+    (resolve, reject) => {
+      sftp.readdir(remotePath, (err, dataList) => {
+        if (err) {
+          return reject(err)
+        }
+        const metadataList: Promise<SyncFileMetadata>[] = dataList.map((data) =>
+          remoteFileMetadataMapper(connection, data, remotePath),
+        )
 
-      return resolve(Promise.all(metadataList))
-    })
-  })
+        return resolve(Promise.all(metadataList))
+      })
+    },
+  )
+
+  sftp.end()
+
+  return awaitedData
 }
 
 async function remoteFileMetadataMapper(
@@ -83,7 +89,7 @@ export async function getRemoteFileData(
   const sftp = await connection.requestSFTP()
   const remoteDirPath = './.air-quality/data'
 
-  const FilePromises = remoteFilenames.map((remoteFilename) => {
+  const filePromises = remoteFilenames.map((remoteFilename) => {
     const remoteFilePath = `${remoteDirPath}/${remoteFilename}`
 
     return new Promise<RemoteFileData>((resolve, reject) => {
@@ -101,5 +107,8 @@ export async function getRemoteFileData(
     })
   })
 
-  return Promise.all(FilePromises)
+  const awaitedData = await Promise.all(filePromises)
+  sftp.end()
+
+  return awaitedData
 }

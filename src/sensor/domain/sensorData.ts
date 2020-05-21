@@ -126,3 +126,10 @@ export function overallQuality(sensorData: SensorData): SensorQuality {
 
   return overallQuality
 }
+
+export const SENSOR_QUALITY_COLORS = {
+  [SensorQuality.Terrible]: '#fad1d0',
+  [SensorQuality.Bad]: '#f8d568',
+  [SensorQuality.Good]: '#90EE90',
+  [SensorQuality.DependsOnContext]: '#add8e6',
+}

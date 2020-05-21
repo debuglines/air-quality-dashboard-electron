@@ -64,7 +64,7 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
     return () => {
       updateState = false
     }
-  }, [connection])
+  }, [])
 
   const localFilesIndex = new Map<string, SyncFileMetadata>(
     (localMetadataList || []).map((i) => [i.filename, i]),
@@ -157,6 +157,7 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
     })
 
     await Promise.all(savedPromises)
+
     loadLatestSensorData()
     loadAllSensorData()
     updateLocal()

@@ -1,7 +1,8 @@
 import { differenceInMinutes } from 'date-fns'
 import { css } from 'emotion'
 import React from 'react'
-import { dateFromTimezone, dateWithTimezone } from '../../app/helpers'
+import { dateFromTimezone, dateWithTimezone } from '../../app/helpers/helpers'
+import VerticalSpacerSmall from '../../app/shared/components/spacers/VerticalSpacerSmall'
 import { typedStyles } from '../../app/theme/styleHelpers'
 import { GraphType } from '../../graph/types'
 import {
@@ -41,6 +42,7 @@ const SensorDataOverviewWidget: React.FC<Props> = (props) => {
         </p>
         <p>Relative time: {differenceMinutes} minutes ago</p>
       </header>
+      <VerticalSpacerSmall />
 
       <dl className={css(styles.wrapper)}>
         <SingleSensorDataItem

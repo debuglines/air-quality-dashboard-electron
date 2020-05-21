@@ -2,7 +2,8 @@ import { parseJSON } from 'date-fns'
 import { promises as fs } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
-import { resultOk } from '../app/helpers'
+import { resultError, resultOk } from '../app/helpers/helpers'
+import { resultOrUndefined } from '../app/helpers/resultHelpers'
 import { Result } from '../app/types'
 import { SensorData } from './domain/sensorData'
 
@@ -23,12 +24,12 @@ export async function parseAllSensorDataFromDir(
   }
 
   const dataPromises = filenames.map((filename) =>
-    parseLatestSensorDataFromFile(join(dirPath, filename)),
+    parseAllSensorDataFromFile(join(dirPath, filename)),
   )
-  const datalist = await Promise.all(dataPromises)
+  const dataList = (await Promise.all(dataPromises)).flat()
 
   // filter not able to detect not undefined
-  const filteredDataList = datalist.filter(
+  const filteredDataList = dataList.filter(
     (data) => data !== undefined,
   ) as SensorData[]
 
@@ -49,11 +50,32 @@ export async function parseLatestSensorDataFromDir(
   return parseLatestSensorDataFromFile(join(dirPath, latestFilename))
 }
 
+export async function parseAllSensorDataFromFile(
+  filepath: string,
+): Promise<SensorData[]> {
+  const fileData = await fs.readFile(filepath, { encoding: 'utf8' })
+  return parseAllSensorDataFromFileData(fileData)
+}
+
 export async function parseLatestSensorDataFromFile(
   filepath: string,
 ): Promise<SensorData | undefined> {
   const fileData = await fs.readFile(filepath, { encoding: 'utf8' })
   return parseLatestSensorDataFromFileData(fileData)
+}
+
+export function parseAllSensorDataFromFileData(fileData: string): SensorData[] {
+  const lines = fileData.split('\n')
+
+  if (lines.length <= 1) {
+    return []
+  }
+
+  const sensorDataList: SensorData[] = lines
+    .map((line) => resultOrUndefined(parseSensorDataCsvLine(line)))
+    .filter((sensorData) => sensorData !== undefined) as SensorData[]
+
+  return sensorDataList
 }
 
 export function parseLatestSensorDataFromFileData(
@@ -73,10 +95,10 @@ export function parseLatestSensorDataFromFileData(
     return undefined
   }
 
-  return parseSensorDataCsvLine(line)
+  return resultOrUndefined(parseSensorDataCsvLine(line))
 }
 
-export function parseSensorDataCsvLine(line: string): SensorData | undefined {
+export function parseSensorDataCsvLine(line: string): Result<SensorData> {
   const [
     timestampRaw,
     temperatureRaw,
@@ -88,7 +110,7 @@ export function parseSensorDataCsvLine(line: string): SensorData | undefined {
     radonLongTermAverageRaw,
   ] = line.split(',').map((data) => data.trim())
 
-  return {
+  const sensorData = {
     datetimeUtc: parseJSON(timestampRaw),
     temperatureInCelcius: parseFloat(temperatureRaw),
     humidity: parseFloat(humidityRaw),
@@ -98,6 +120,16 @@ export function parseSensorDataCsvLine(line: string): SensorData | undefined {
     radonLongTermAverage: parseFloat(radonLongTermAverageRaw),
     radonShortTermAverage: parseFloat(radonShortTermAverageRaw),
   }
+
+  const anyErrors = Object.values(sensorData).some(
+    (value) => typeof value !== 'object' && isNaN(value),
+  )
+
+  if (anyErrors) {
+    return resultError()
+  }
+
+  return resultOk(sensorData)
 }
 
 export function parseFloat(value: string): number {

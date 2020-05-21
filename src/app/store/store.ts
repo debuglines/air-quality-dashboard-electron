@@ -1,7 +1,7 @@
 import { createDomain } from 'effector'
 import NodeSSH from 'node-ssh'
 import { SensorData } from '../../sensor/domain/sensorData'
-import { resultError, resultOk } from '../helpers'
+import { resultError, resultOk } from '../helpers/helpers'
 import { Result } from '../types'
 import {
   connectRemoteAction,
@@ -63,5 +63,8 @@ const AirQualityStore = AirQualityDomain.store<StoreType>(initialState)
   .on(connectRemote.doneData, (state, connection) => {
     return { ...state, remoteConnection: connection }
   })
+
+loadLatestSensorData()
+loadAllSensorData()
 
 export default AirQualityStore

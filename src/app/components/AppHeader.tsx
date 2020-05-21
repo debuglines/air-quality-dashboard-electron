@@ -1,7 +1,7 @@
 import { css } from 'emotion'
 import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { dashboardRoute, rootRoute, syncPath } from '../routesHelper'
+import { dashboardRoute, rootRoute, syncPath } from '../helpers/routesHelper'
 import { typedStyles } from '../theme/styleHelpers'
 
 type Props = {}

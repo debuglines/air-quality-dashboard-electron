@@ -1,5 +1,7 @@
 import { useStore } from 'effector-react'
 import React, { useEffect } from 'react'
+import VerticalSpacerSmall from '../../app/shared/components/spacers/VerticalSpacerSmall'
+import PageHeading from '../../app/shared/components/typography/PageHeading'
 import AirQualityStore, { loadLatestSensorData } from '../../app/store/store'
 import SensorDataOverviewWidget from './SensorDataOverviewWidget'
 
@@ -13,9 +15,17 @@ const DashboardScreen: React.FC<Props> = (props) => {
     loadLatestSensorData(undefined)
   }, [])
 
+  const pageHeader = (
+    <>
+      <PageHeading>Dashboard</PageHeading>
+      <VerticalSpacerSmall />
+    </>
+  )
+
   if (latestSensorDataResult === undefined) {
     return (
       <div>
+        {pageHeader}
         <p>Loading sensor data from disk</p>
       </div>
     )
@@ -24,6 +34,7 @@ const DashboardScreen: React.FC<Props> = (props) => {
   if (latestSensorDataResult.error === true) {
     return (
       <div>
+        {pageHeader}
         <p>There was an error laoding the latest sensor data. </p>
       </div>
     )
@@ -33,6 +44,7 @@ const DashboardScreen: React.FC<Props> = (props) => {
 
   return (
     <div>
+      {pageHeader}
       <SensorDataOverviewWidget sensorData={latestSensorData} />
     </div>
   )

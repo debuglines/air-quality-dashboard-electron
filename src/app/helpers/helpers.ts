@@ -1,5 +1,5 @@
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
-import { ResultError, ResultOk, TIMEZONE_STRING } from './types'
+import { ResultError, ResultOk, TIMEZONE_STRING } from '../types'
 
 export function resultOk<T>(data: T): ResultOk<T> {
   return {

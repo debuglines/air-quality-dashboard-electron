@@ -1,10 +1,10 @@
 import { css } from 'emotion'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { graphPath } from '../../app/routesHelper'
+import { chartPath } from '../../app/helpers/routesHelper'
 import { typedStyles } from '../../app/theme/styleHelpers'
 import { GraphType } from '../../graph/types'
-import { SensorQuality } from '../domain/sensorData'
+import { SensorQuality, SENSOR_QUALITY_COLORS } from '../domain/sensorData'
 
 type Props = {
   label: string
@@ -21,7 +21,7 @@ const SingleSensorDataItem: React.FC<Props> = (props) => {
 
   return (
     <Link
-      to={graphPath(props.graphType)}
+      to={chartPath(props.graphType)}
       className={css(styles.textLine, styles.wrapper, wrapperQualityStyle)}
     >
       <dt className={css(styles.textLine, styles.heading)}>{props.label}</dt>
@@ -75,16 +75,16 @@ const styles = typedStyles({
     color: '#000',
   },
   wrapperTerrible: {
-    backgroundColor: '#fad1d0',
+    backgroundColor: SENSOR_QUALITY_COLORS[SensorQuality.Terrible],
   },
   wrapperBad: {
-    backgroundColor: '#f8d568',
+    backgroundColor: SENSOR_QUALITY_COLORS[SensorQuality.Bad],
   },
   wrapperGood: {
-    backgroundColor: '#90EE90',
+    backgroundColor: SENSOR_QUALITY_COLORS[SensorQuality.Good],
   },
   wrapperDependsOnContext: {
-    backgroundColor: '#add8e6',
+    backgroundColor: SENSOR_QUALITY_COLORS[SensorQuality.DependsOnContext],
   },
   textLine: {
     padding: '8px',
