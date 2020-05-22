@@ -39,3 +39,5 @@ export function getLastListItemOrUndefined<T>(list: T[]): T | undefined {
 
   return list[Math.max(list.length - 1, 0)]
 }
+
+export const HOURS_24_IN_MS = 86400000

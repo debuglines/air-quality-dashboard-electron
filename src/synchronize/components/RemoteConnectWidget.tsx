@@ -41,33 +41,34 @@ const RemoteConnectWidget: React.FC<Props> = (props) => {
 
   return (
     <Form>
-      <InputField
-        label="Host"
-        type="text"
-        value={host}
-        onValueChange={(event) => setHost(event.currentTarget.value)}
-      />
+      <div className={css(commonStyles.flexRowWrap)}>
+        <InputField
+          label="Username"
+          type="text"
+          value={username}
+          onValueChange={(event) => setUsername(event.currentTarget.value)}
+        />
+        <InputField
+          label="Host"
+          type="text"
+          value={host}
+          onValueChange={(event) => setHost(event.currentTarget.value)}
+        />
 
-      <InputField
-        label="Username"
-        type="text"
-        value={username}
-        onValueChange={(event) => setUsername(event.currentTarget.value)}
-      />
+        <InputField
+          label="Port"
+          type="number"
+          value={port}
+          onValueChange={(event) => setPort(event.currentTarget.valueAsNumber)}
+        />
 
-      <InputField
-        label="Password"
-        type="password"
-        value={password}
-        onValueChange={(event) => setPassword(event.currentTarget.value)}
-      />
-
-      <InputField
-        label="Port"
-        type="number"
-        value={port}
-        onValueChange={(event) => setPort(event.currentTarget.valueAsNumber)}
-      />
+        <InputField
+          label="Password"
+          type="password"
+          value={password}
+          onValueChange={(event) => setPassword(event.currentTarget.value)}
+        />
+      </div>
 
       <div className={css(commonStyles.flexRowWrap)}>
         <button type="submit" onClick={handleSubmit}>

@@ -2,6 +2,7 @@ import React from 'react'
 
 type Props = {
   onSubmit?: (event: React.FormEvent<HTMLFormElement>) => void
+  className?: string
 }
 
 const Form: React.FC<Props> = (props) => {
@@ -13,7 +14,11 @@ const Form: React.FC<Props> = (props) => {
     }
   }
 
-  return <form onSubmit={handleSubmit}>{props.children}</form>
+  return (
+    <form className={props.className} onSubmit={handleSubmit}>
+      {props.children}
+    </form>
+  )
 }
 
 export default Form

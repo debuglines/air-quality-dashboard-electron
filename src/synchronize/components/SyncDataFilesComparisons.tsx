@@ -64,7 +64,7 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
     return () => {
       updateState = false
     }
-  }, [])
+  }, [connection])
 
   const localFilesIndex = new Map<string, SyncFileMetadata>(
     (localMetadataList || []).map((i) => [i.filename, i]),
@@ -153,7 +153,7 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
       filenamesCheckedForSync,
     )
     const savedPromises = fileDataList.map((fileData) => {
-      saveDataFile(fileData.filename, fileData.data)
+      return saveDataFile(fileData.filename, fileData.data)
     })
 
     await Promise.all(savedPromises)

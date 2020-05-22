@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts'
 import DateField from '../../app/shared/components/form/DateField'
+import RangeField from '../../app/shared/components/form/RangeField'
 import HorizontalSpacerSmall from '../../app/shared/components/spacers/HorizontalSpacerSmall'
 import VerticalSpacerSmall from '../../app/shared/components/spacers/VerticalSpacerSmall'
 import PageHeading from '../../app/shared/components/typography/PageHeading'
@@ -29,6 +30,7 @@ import {
   getFirstListItemOrUndefined,
   getLastListItemOrUndefined,
   graphDateFormatter,
+  HOURS_24_IN_MS,
 } from '../helpers'
 import { GraphType, LineChartPoint, ReferenceAreaValues } from '../types'
 import GraphNavbar from './GraphNavbar'
@@ -155,9 +157,49 @@ const ChartScreen: React.FC<Props> = (props) => {
         )}
 
         <div>
-          <input type="range" />
-          <input type="range" />
+          <RangeField
+            label="Start slice date soft adjust"
+            value={dateSliceDateEarly.getTime()}
+            min={
+              dataPointFullEarliest &&
+              parseJSON(dataPointFullEarliest.date).getTime()
+            }
+            max={
+              dataPointFullLatest &&
+              parseJSON(dataPointFullLatest.date).getTime() + HOURS_24_IN_MS
+            }
+            step={HOURS_24_IN_MS}
+            onChange={(updatedDateInMs) => {
+              const date = new Date()
+              date.setTime(updatedDateInMs)
+              setDataSliceDateEarly(date)
+            }}
+            debounceChange
+          />
+          <RangeField
+            label="End slice date soft adjust"
+            value={dateSliceDateLate.getTime()}
+            min={
+              dataPointFullEarliest &&
+              parseJSON(dataPointFullEarliest.date).getTime()
+            }
+            max={
+              dataPointFullLatest &&
+              parseJSON(dataPointFullLatest.date).getTime() + HOURS_24_IN_MS
+            }
+            step={HOURS_24_IN_MS}
+            onChange={(updatedDateInMs) => {
+              const date = new Date()
+              date.setTime(updatedDateInMs)
+              setDataSliceDateLate(date)
+            }}
+            debounceChange
+          />
         </div>
+
+        <VerticalSpacerSmall />
+        <p>⬇ or ⬆</p>
+        <VerticalSpacerSmall />
 
         <div className={css(commonStyles.flexRowWrap)}>
           <DateField
@@ -177,6 +219,7 @@ const ChartScreen: React.FC<Props> = (props) => {
           />
         </div>
       </fieldset>
+      <VerticalSpacerSmall />
     </div>
   )
 }
