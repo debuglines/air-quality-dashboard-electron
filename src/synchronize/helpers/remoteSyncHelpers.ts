@@ -1,21 +1,6 @@
-import NodeSSH from 'node-ssh'
+import { Client, SFTPWrapper } from 'ssh2'
+import { RemoteConnectionConfig } from '../types'
 import { generateChecksum, SyncFileMetadata } from './syncHelpers'
-
-const ssh = new NodeSSH()
-
-export function connectSsh(
-  host: string,
-  username: string,
-  password: string,
-  port: number,
-): Promise<NodeSSH> {
-  return ssh.connect({
-    host,
-    username,
-    password,
-    port,
-  })
-}
 
 export type Attributes = {
   mode: number
@@ -32,39 +17,77 @@ export type FileEntry = {
   attrs: Attributes
 }
 
-export async function remoteDataFileMetadata(
-  connection: NodeSSH,
-): Promise<SyncFileMetadata[]> {
-  const sftp = await connection.requestSFTP()
-  const remotePath = './.air-quality/data'
+export async function remoteReady<T>(
+  connectionConfig: RemoteConnectionConfig,
+  callback?: (client: Client) => Promise<T>,
+): Promise<T> {
+  const client = new Client()
+  const promiseResult = new Promise<T>((resolve, reject) => {
+    client.on('ready', () => {
+      if (callback === undefined) {
+        return resolve()
+      }
+      const result = callback(client)
+      return resolve(result)
+    })
 
-  const awaitedData = await new Promise<SyncFileMetadata[]>(
-    (resolve, reject) => {
-      sftp.readdir(remotePath, (err, dataList) => {
+    client.connect(connectionConfig)
+  })
+
+  const promiseError = new Promise<T>((resolve, reject) => {
+    client.on('error', (error) => {
+      reject(error)
+    })
+  })
+
+  const result = await Promise.race([promiseResult, promiseError])
+  client.end()
+  return result
+}
+
+export async function remoteSftp<T>(
+  connectionConfig: RemoteConnectionConfig,
+  callback: (sftp: SFTPWrapper) => Promise<T>,
+): Promise<T> {
+  return remoteReady(connectionConfig, (client) => {
+    return new Promise((resolve, reject) => {
+      client.sftp((err, sftp) => {
         if (err) {
           return reject(err)
         }
-        const metadataList: Promise<SyncFileMetadata>[] = dataList.map((data) =>
-          remoteFileMetadataMapper(connection, data, remotePath),
-        )
-
-        return resolve(Promise.all(metadataList))
+        const result = callback(sftp)
+        return resolve(result)
       })
-    },
-  )
+    })
+  })
+}
 
-  sftp.end()
+export async function remoteDataFileMetadata(
+  sftp: SFTPWrapper,
+): Promise<SyncFileMetadata[]> {
+  const remotePath = './.air-quality/data'
 
-  return awaitedData
+  return new Promise((resolve, reject) => {
+    sftp.readdir(remotePath, (err, dataList) => {
+      if (err) {
+        return reject(err)
+      }
+      const metadataList: Promise<SyncFileMetadata>[] = dataList.map((data) =>
+        remoteFileMetadataMapper(sftp, data, remotePath),
+      )
+
+      return resolve(Promise.all(metadataList))
+    })
+  })
 }
 
 async function remoteFileMetadataMapper(
-  connection: NodeSSH,
+  sftp: SFTPWrapper,
   fileEntry: FileEntry,
   remoteDirPath: string,
 ): Promise<SyncFileMetadata> {
   const fileData: string = (
-    await getRemoteFileData(connection, [fileEntry.filename])
+    await getRemoteFileData(sftp, [fileEntry.filename])
   )[0].data
 
   const checksum = generateChecksum(fileData)
@@ -83,13 +106,12 @@ export type RemoteFileData = {
 }
 
 export async function getRemoteFileData(
-  connection: NodeSSH,
+  sftp: SFTPWrapper,
   remoteFilenames: string[],
 ): Promise<RemoteFileData[]> {
-  const sftp = await connection.requestSFTP()
   const remoteDirPath = './.air-quality/data'
 
-  const filePromises = remoteFilenames.map((remoteFilename) => {
+  const data = remoteFilenames.map((remoteFilename) => {
     const remoteFilePath = `${remoteDirPath}/${remoteFilename}`
 
     return new Promise<RemoteFileData>((resolve, reject) => {
@@ -107,8 +129,5 @@ export async function getRemoteFileData(
     })
   })
 
-  const awaitedData = await Promise.all(filePromises)
-  sftp.end()
-
-  return awaitedData
+  return Promise.all(data)
 }

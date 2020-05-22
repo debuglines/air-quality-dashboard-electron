@@ -3,19 +3,21 @@ import { css } from 'emotion'
 import React, { useState } from 'react'
 import Form from '../../app/shared/components/form/Form'
 import InputField from '../../app/shared/components/form/InputField'
-import AirQualityStore, { connectRemote } from '../../app/store/store'
+import AirQualityStore, { storeConnectionConfig } from '../../app/store/store'
 import commonStyles from '../../app/theme/commonStyles'
+import { remoteReady } from '../helpers/remoteSyncHelpers'
 
 type Props = {}
 
 const RemoteConnectWidget: React.FC<Props> = (props) => {
-  const { remoteConnection } = useStore(AirQualityStore)
+  const { remoteConnectionConfig } = useStore(AirQualityStore)
 
   const [host, setHost] = useState<undefined | string>('raspberrypi')
   const [username, setUsername] = useState<undefined | string>('pi')
   const [password, setPassword] = useState<string>('')
   const [port, setPort] = useState<undefined | number>(22)
   const [pending, setPending] = useState<boolean>(false)
+  const [hasError, setHasError] = useState<boolean>(false)
 
   const handleSubmit = async () => {
     if (
@@ -27,14 +29,25 @@ const RemoteConnectWidget: React.FC<Props> = (props) => {
       return
     }
     setPending(true)
-    await connectRemote({ host, port, username, password })
-    setPending(false)
+    setHasError(false)
+
+    const connectionConfig = { host, port, username, password }
+
+    try {
+      await remoteReady(connectionConfig)
+      await storeConnectionConfig(connectionConfig)
+    } catch (err) {
+      console.error(err)
+      setHasError(true)
+    } finally {
+      setPending(false)
+    }
   }
 
-  if (remoteConnection) {
+  if (remoteConnectionConfig) {
     return (
       <div>
-        <p>Connected to remote</p>
+        <p>Has validated connection config</p>
       </div>
     )
   }
@@ -76,6 +89,8 @@ const RemoteConnectWidget: React.FC<Props> = (props) => {
         </button>
 
         {pending && <p>Connecting &hellip;</p>}
+
+        {hasError && <p>Error connecting to ssh</p>}
       </div>
     </Form>
   )

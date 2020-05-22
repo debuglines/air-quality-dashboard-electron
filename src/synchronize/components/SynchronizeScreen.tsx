@@ -7,21 +7,21 @@ import SyncDataFilesComparison from './SyncDataFilesComparisons'
 type Props = {}
 
 const SynchronizeScreen: React.FC<Props> = (props) => {
-  const { remoteConnection } = useStore(AirQualityStore)
+  const { remoteConnectionConfig } = useStore(AirQualityStore)
 
   return (
     <div>
       <RemoteConnectWidget />
 
-      {remoteConnection === undefined && (
+      {remoteConnectionConfig === undefined && (
         <div>
           <h2>Sync files</h2>
           <p>ℹ Log in to remote to sync files</p>
         </div>
       )}
 
-      {remoteConnection !== undefined && (
-        <SyncDataFilesComparison connection={remoteConnection} />
+      {remoteConnectionConfig !== undefined && (
+        <SyncDataFilesComparison connectionConfig={remoteConnectionConfig} />
       )}
     </div>
   )

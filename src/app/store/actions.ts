@@ -3,7 +3,7 @@ import {
   parseAllSensorDataFromDir,
   parseLatestSensorDataFromDir,
 } from '../../sensor/parser'
-import { connectSsh } from '../../synchronize/helpers/remoteSyncHelpers'
+import { RemoteConnectionConfig } from '../../synchronize/types'
 
 export async function loadLatestSensorDataAction() {
   const sensorData = await parseLatestSensorDataFromDir(
@@ -19,17 +19,18 @@ export async function loadAllSensorDataAction() {
   return sensorDataResult
 }
 
-export async function connectRemoteAction(params: {
-  host: string
-  port: number
-  username: string
-  password: string
-}) {
+export async function storeConnectionConfigAction(
+  params: RemoteConnectionConfig,
+) {
   const { host, port, username, password } = params
-  if (host.trim() === '' || username.trim() === '' || password.trim() === '') {
+  if (
+    host.trim() === '' ||
+    username.trim() === '' ||
+    password.trim() === '' ||
+    port < 0
+  ) {
     return undefined
   }
 
-  const connection = await connectSsh(host, username, password, port)
-  return connection
+  return params
 }

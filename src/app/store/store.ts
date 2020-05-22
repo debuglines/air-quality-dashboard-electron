@@ -1,12 +1,12 @@
 import { createDomain } from 'effector'
-import NodeSSH from 'node-ssh'
 import { SensorData } from '../../sensor/domain/sensorData'
+import { RemoteConnectionConfig } from '../../synchronize/types'
 import { resultError, resultOk } from '../helpers/helpers'
 import { Result } from '../types'
 import {
-  connectRemoteAction,
   loadAllSensorDataAction,
   loadLatestSensorDataAction,
+  storeConnectionConfigAction,
 } from './actions'
 
 export const AirQualityDomain = createDomain()
@@ -25,28 +25,23 @@ export const loadAllSensorData = AirQualityDomain.createEffect<
   handler: loadAllSensorDataAction,
 })
 
-export const connectRemote = AirQualityDomain.createEffect<
-  {
-    host: string
-    port: number
-    username: string
-    password: string
-  },
-  NodeSSH | undefined
+export const storeConnectionConfig = AirQualityDomain.createEffect<
+  RemoteConnectionConfig,
+  RemoteConnectionConfig | undefined
 >({
-  handler: connectRemoteAction,
+  handler: storeConnectionConfigAction,
 })
 
 type StoreType = {
   latestSensorData: Result<SensorData> | undefined
   allSensorDataResult: Result<SensorData[]> | undefined
-  remoteConnection: NodeSSH | undefined
+  remoteConnectionConfig: RemoteConnectionConfig | undefined
 }
 
 const initialState: StoreType = {
   latestSensorData: undefined,
   allSensorDataResult: undefined,
-  remoteConnection: undefined,
+  remoteConnectionConfig: undefined,
 }
 
 const AirQualityStore = AirQualityDomain.store<StoreType>(initialState)
@@ -60,8 +55,8 @@ const AirQualityStore = AirQualityDomain.store<StoreType>(initialState)
   .on(loadAllSensorData.doneData, (state, sensorDataResult) => {
     return { ...state, allSensorDataResult: sensorDataResult }
   })
-  .on(connectRemote.doneData, (state, connection) => {
-    return { ...state, remoteConnection: connection }
+  .on(storeConnectionConfig.doneData, (state, connection) => {
+    return { ...state, remoteConnectionConfig: connection }
   })
 
 loadLatestSensorData()

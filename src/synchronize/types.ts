@@ -6,3 +6,10 @@ export type MixedSyncMetadata = {
   canBeSyncedSafely: boolean
   alreadySyncedEqual: boolean
 }
+
+export type RemoteConnectionConfig = {
+  host: string
+  username: string
+  password: string
+  port: number
+}

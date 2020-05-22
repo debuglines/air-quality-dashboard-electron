@@ -1,6 +1,6 @@
 {
   "name": "air-quality-dashboard-electron",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Debuglines",
   "homepage": "./",
   "main": "public/electron.js",
@@ -27,12 +27,12 @@
     "effector-react": "20.7.1",
     "emotion": "10.0.27",
     "lodash.debounce": "4.0.8",
-    "node-ssh": "10.0.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-router-dom": "5.2.0",
     "react-scripts": "3.4.1",
-    "recharts": "1.8.5"
+    "recharts": "1.8.5",
+    "ssh2": "0.8.9"
   },
   "devDependencies": {
     "@babel/preset-react": "7.9.4",

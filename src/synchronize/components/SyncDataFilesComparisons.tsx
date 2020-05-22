@@ -1,4 +1,3 @@
-import NodeSSH from 'node-ssh'
 import React, { createRef, useEffect, useState } from 'react'
 import { loadAllSensorData, loadLatestSensorData } from '../../app/store/store'
 import {
@@ -8,20 +7,21 @@ import {
 import {
   getRemoteFileData,
   remoteDataFileMetadata,
+  remoteSftp,
 } from '../helpers/remoteSyncHelpers'
 import {
   canBeSyncedSafely as canBeSyncedSafelyCheck,
   SyncFileMetadata,
 } from '../helpers/syncHelpers'
-import { MixedSyncMetadata } from '../types'
+import { MixedSyncMetadata, RemoteConnectionConfig } from '../types'
 import SyncFileItem from './SyncFileItem'
 
 type Props = {
-  connection: NodeSSH
+  connectionConfig: RemoteConnectionConfig
 }
 
 const SyncDataFilesComparison: React.FC<Props> = (props) => {
-  const { connection } = props
+  const { connectionConfig } = props
 
   const [remoteMetadataList, setRemoteMetadataList] = useState<
     undefined | SyncFileMetadata[]
@@ -29,6 +29,8 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
   const [localMetadataList, setLocalMetadataList] = useState<
     undefined | SyncFileMetadata[]
   >(undefined)
+  const [hasError, setHasError] = useState<boolean>(false)
+  const [pending, setPending] = useState<boolean>(false)
 
   const updateLocal = async () => {
     const localMetadata = await getLocalDataFilesMetadata()
@@ -36,7 +38,10 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
   }
 
   const updateRemote = async () => {
-    const fileEntries = await remoteDataFileMetadata(connection)
+    const fileEntries = await remoteSftp(
+      connectionConfig,
+      remoteDataFileMetadata,
+    )
 
     setRemoteMetadataList(fileEntries)
   }
@@ -51,75 +56,85 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
     }
 
     const runRemote = async () => {
-      const fileEntries = await remoteDataFileMetadata(connection)
+      try {
+        setHasError(false)
+        const fileEntries = await remoteSftp(
+          connectionConfig,
+          remoteDataFileMetadata,
+        )
 
-      if (updateState) {
-        setRemoteMetadataList(fileEntries)
+        if (updateState) {
+          setRemoteMetadataList(fileEntries)
+        }
+      } catch (error) {
+        console.error(error)
+        if (updateState) {
+          setHasError(true)
+        }
       }
     }
 
-    runLocal()
-    runRemote()
+    setPending(true)
+    Promise.all([runLocal(), runRemote()]).then(() => {
+      if (updateState) {
+        setPending(false)
+      }
+    })
 
     return () => {
       updateState = false
     }
-  }, [connection])
+  }, [connectionConfig])
 
   const localFilesIndex = new Map<string, SyncFileMetadata>(
-    (localMetadataList || []).map((i) => [i.filename, i]),
+    localMetadataList?.map((i) => [i.filename, i]),
   )
   const checkboxListRef = createRef<HTMLUListElement>()
 
-  const canAllBeSynced = (remoteMetadataList || []).every((remoteFileEntry) => {
+  const canAllBeSynced = remoteMetadataList?.every((remoteFileEntry) => {
     const localFileMetadata = localFilesIndex.get(remoteFileEntry.filename)
     return canBeSyncedSafelyCheck(remoteFileEntry, localFileMetadata)
   })
 
-  const allFullySynced = (remoteMetadataList || []).every(
-    (remoteMetadataItem) => {
-      const localFileMetadata = localFilesIndex.get(remoteMetadataItem.filename)
-      if (localFileMetadata === undefined) {
-        return false
-      }
+  const allFullySynced = remoteMetadataList?.every((remoteMetadataItem) => {
+    const localFileMetadata = localFilesIndex.get(remoteMetadataItem.filename)
+    if (localFileMetadata === undefined) {
+      return false
+    }
 
-      return remoteMetadataItem.checksum === localFileMetadata.checksum
-    },
-  )
+    return remoteMetadataItem.checksum === localFileMetadata.checksum
+  })
 
-  const sortedRemoteMetadataList = (remoteMetadataList || []).sort((a, b) =>
+  const sortedRemoteMetadataList = remoteMetadataList?.sort((a, b) =>
     a.filename.localeCompare(b.filename),
   )
 
-  const mixedSyncMetadataList: MixedSyncMetadata[] = sortedRemoteMetadataList.map(
-    (remoteMetadata) => {
-      const localMetadata = localFilesIndex.get(remoteMetadata.filename)
-      const canBeSyncedSafely = canBeSyncedSafelyCheck(
-        remoteMetadata,
-        localMetadata,
-      )
+  const mixedSyncMetadataList:
+    | undefined
+    | MixedSyncMetadata[] = sortedRemoteMetadataList?.map((remoteMetadata) => {
+    const localMetadata = localFilesIndex.get(remoteMetadata.filename)
+    const canBeSyncedSafely = canBeSyncedSafelyCheck(
+      remoteMetadata,
+      localMetadata,
+    )
 
-      const alreadySyncedEqual =
-        localMetadata?.checksum === remoteMetadata.checksum
+    const alreadySyncedEqual =
+      localMetadata?.checksum === remoteMetadata.checksum
 
-      return {
-        remoteMetadata,
-        localMetadata,
-        canBeSyncedSafely,
-        alreadySyncedEqual,
-      }
-    },
-  )
+    return {
+      remoteMetadata,
+      localMetadata,
+      canBeSyncedSafely,
+      alreadySyncedEqual,
+    }
+  })
 
   type FilteredMetadataLists = {
     unsyncedMetadataList: MixedSyncMetadata[]
     syncedFullyMetadataList: MixedSyncMetadata[]
   }
 
-  const {
-    unsyncedMetadataList,
-    syncedFullyMetadataList,
-  } = mixedSyncMetadataList.reduce<FilteredMetadataLists>(
+  const splitList = mixedSyncMetadataList?.reduce<FilteredMetadataLists>(
     (prev, curr) => {
       if (curr.alreadySyncedEqual) {
         prev.syncedFullyMetadataList.push(curr)
@@ -136,21 +151,22 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
   )
 
   const defaultCheckedFilenames = mixedSyncMetadataList
-    .filter((data) => data.localMetadata === undefined)
+    ?.filter((data) => data.localMetadata === undefined)
     .map((data) => data.remoteMetadata.filename)
 
   const [filenamesCheckedForSync, setFilenamesCheckedForSync] = useState<
     string[]
-  >(defaultCheckedFilenames)
+  >(defaultCheckedFilenames || [])
 
   const handleSyncAllFiles = async () => {
     if (filenamesCheckedForSync.length === 0) {
       return
     }
 
-    const fileDataList = await getRemoteFileData(
-      connection,
-      filenamesCheckedForSync,
+    setPending(true)
+
+    const fileDataList = await remoteSftp(connectionConfig, (sftp) =>
+      getRemoteFileData(sftp, filenamesCheckedForSync),
     )
     const savedPromises = fileDataList.map((fileData) => {
       return saveDataFile(fileData.filename, fileData.data)
@@ -158,10 +174,14 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
 
     await Promise.all(savedPromises)
 
-    loadLatestSensorData()
-    loadAllSensorData()
-    updateLocal()
-    updateRemote()
+    await Promise.all([
+      loadLatestSensorData(),
+      loadAllSensorData(),
+      updateLocal(),
+      updateRemote(),
+    ])
+
+    setPending(false)
   }
 
   const handleCheckToggle = (value: string) => {
@@ -177,6 +197,8 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
 
     setFilenamesCheckedForSync(updatedList)
   }
+  const unsyncedMetadataList = splitList?.unsyncedMetadataList
+  const syncedFullyMetadataList = splitList?.syncedFullyMetadataList
 
   return (
     <section>
@@ -187,10 +209,25 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
           <p>✔ All files can be synced safely</p>
         )}
         <button onClick={handleSyncAllFiles}>Sync file to local disk</button>
+        {pending && <p>Pending ...</p>}
       </div>
 
+      {hasError && (
+        <div>
+          <p>Remote error</p>
+          <button
+            onClick={() => {
+              updateRemote()
+              updateLocal()
+            }}
+          >
+            Try to refresh remote files list
+          </button>
+        </div>
+      )}
+
       <ul ref={checkboxListRef}>
-        {unsyncedMetadataList.map((mixedMetadata) => {
+        {unsyncedMetadataList?.map((mixedMetadata) => {
           const { remoteMetadata } = mixedMetadata
 
           const checked =
@@ -214,7 +251,7 @@ const SyncDataFilesComparison: React.FC<Props> = (props) => {
           <hr />
         </li>
 
-        {syncedFullyMetadataList.map((mixedMetadata) => {
+        {syncedFullyMetadataList?.map((mixedMetadata) => {
           const { remoteMetadata } = mixedMetadata
 
           const checked =
